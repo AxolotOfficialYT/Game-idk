@@ -24,8 +24,15 @@ def reset():
     prevx = "Nieznany"
     prevy = "Nieznany"
 
+#flushowanie bufora żeby spamowanie klawiszy nie psuło wszystkiego
+def flush_in():
+    while msvcrt.kbhit():
+        msvcrt.getch()
+
 # Główna pętla programu, pozwala na resetowanie gry bez konieczności ponownego uruchamiania programu
 while True:
+
+    os.system('cls')
     reset()
     #jakaś def co później używam
     def ObiektyObok(x, y):
@@ -69,6 +76,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
             time.sleep(1)
             
     nazwa_wyprawy = input("\nPodaj nazwę swojej wyprawy: ")
+    
 
     print(f"\nWitaj, {imie}! Przygotuj się do wyprawy!\n")
     time.sleep(1)
@@ -232,6 +240,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
         while True:
             print("\nNaciśnij dowolny klawisz jak najszybciej po sygnale.")
             time.sleep(2)
+            flush_in()
             print("Czekaj...")
             
             czekaj = random.uniform(1, 3)
@@ -286,6 +295,10 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
 
     # Główna pętla gry
     while True:
+        flush_in()
+        if zdrowie <= 0:
+            zdrowie = 0
+            break
         # ruch wszystkich przeciwników, nie fajnie sie to robiło
         for (x, y) in list(swiat.keys()):
             if swiat.get((x, y)) == '!':
@@ -298,7 +311,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
                     for dx, dy in kierunki:
 
                         nx, ny = x + dx, y + dy #fancy ahh
-                        if swiat.get((nx, ny)) == '.':
+                        if swiat.get((nx, ny)) == '.' and (nx, ny) != (currx, curry):
 
                             swiat[(x, y)] = '.'
                             swiat[(nx, ny)] = '!'
@@ -307,6 +320,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
         display(zasieg)
         print("\n Ostatni krok:", ostatnikrok,", Ostatnia pozycja: x =", prevx, "y =", prevy)
         print(f"\nZdrowie: {zdrowie}\nSkarby: {skarby}\nPokonani przeciwnicy: {zabici}\nGłód: {głód}{' !! <-----' if głód <= 0 else ' <-----' if głód < 30 else ''}\nImię: {imie}\nKroki: {kroki}")
+        flush_in()
         movdirec = input("Wprowadź kierunek ruchu (w, a, s, d): ")
         moved = 0
         prevx = currx
@@ -364,6 +378,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
                 zdrowie -= 80
                 if zdrowie <= 0:
                     wpróżni = True
+                    zdrowie = 0
                     break
                 print("\nPróżnia ciebe prawie pochłoneła! Straciłeś 80 zdrowia.")
                 zdarzenia.append(f"Tura {kroki}: Wpadnięcie w próżnię, stracenie 80 HP")
@@ -411,6 +426,7 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
                 zdrowie -= 60
             swiat[(currx, curry)] = '.'
             time.sleep(1.5)
+            os.system('cls')
         elif swiat.get((currx, curry), 'empty') == 'T':
             print("\nZnalazłeś skarb! Zdobywasz 1 skarb!")
             zdarzenia.append(f"Tura {kroki}: Znalezienie skarbu, +1 skarb")
@@ -419,6 +435,8 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
             time.sleep(1.5)
 
         if skarby >= 5 or zdrowie <= 0:
+            if zdrowie <= 0:
+                zdrowie = 0
             break
 
         if random.random() < 0.03 and czytrwa == False:
@@ -475,32 +493,34 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
         for i in range(5):
             print(". ", end='', flush=True)
             time.sleep(0.5)
-        print(f"""=== WYPRAWA ZAKOŃCZONA ===
+        print(f"""\n=== WYPRAWA ZAKOŃCZONA ===
 
-        Zebrałeś wszystkie 5 skarbów, {imie}!
-        Twoja legenda przejdzie przez wieki.""")
+Zebrałeś wszystkie 5 skarbów, {imie}!
+Twoja legenda przejdzie przez wieki.""")
         print("\nWyprawa zakończona sukcesem! Gratulacje!")
 
-    elif zdrowie <= 0:
-        os.system('cls')
-        for i in range(5):
-            print(". ", end='', flush=True)
-            time.sleep(0.5)
-        print(f"""=== WYPRAWA ZAKOŃCZONA ===
-
-        Niestety, {imie}, twoja wyprawa zakończyła się tragicznie.
-        Twoje imię zostanie zapamiętane jako przestroga dla przyszłych poszukiwaczy przygód.""")
-        print("\nWyprawa zakończona porażką. Powodzenia następnym razem!")
-
-    elif wpróżni == True:
+    elif zdrowie <= 0 and wpróżni == False:
+        zdrowie = 0
         os.system('cls')
         for i in range(5):
             print(". ", end='', flush=True)
             time.sleep(0.5)
         print(f"""\n=== WYPRAWA ZAKOŃCZONA ===
 
-        Niestety, {imie}, twoja wyprawa zakończyła się tragicznie. Próżnia cię pochłonęła.
-        Twoje imię zaginie w otchłani, a twoja historia będzie zapomniana.""")
+Niestety, {imie}, twoja wyprawa zakończyła się tragicznie.
+Twoje imię zostanie zapamiętane jako przestroga dla przyszłych poszukiwaczy przygód.""")
+        print("\nWyprawa zakończona porażką. Powodzenia następnym razem!")
+
+    elif wpróżni == True:
+        zdrowie = 0
+        os.system('cls')
+        for i in range(5):
+            print(". ", end='', flush=True)
+            time.sleep(0.5)
+        print(f"""\n=== WYPRAWA ZAKOŃCZONA ===
+
+Niestety, {imie}, twoja wyprawa zakończyła się tragicznie. Próżnia cię pochłonęła.
+Twoje imię zaginie w otchłani, a twoja historia będzie zapomniana.""")
         print("\nWyprawa zakończona porażką. Powodzenia następnym razem!\n")
 
 
@@ -522,14 +542,20 @@ Zacznijmy od ustawienia parametrów wyprawy.\n""")
     Pokonani przeciwnicy: {zabici}
 
             ------ Zakończenie ------
-    Przyczyna: {"Sukces - zebrano 5 skarbów" if skarby >= 5 else "Porażka - śmierć" if zdrowie <= 0 else "Zaginięcie w próżni"}
-    Wynik: {skarby * 100 + zabici * 50 + kroki * 1.6}
+    Przyczyna: {"Sukces - zebrano 5 skarbów" if skarby >= 5 else "Porażka - śmierć" if zdrowie <= 0 and wpróżni == False else "Zaginięcie w próżni"}
+    Wynik: {skarby * 100 + zabici * 50 + int(kroki * 0.2)} punktów
             ------ Zdarzenia ------
     """)
-    for z in zdarzenia:
-        print(f"  {z}")
-    print(f"""
-    =====================================
-    """)
+    if len(zdarzenia) == 0:
+        print("    Brak zdarzeń podczas wyprawy.")
+    else:
+        for z in zdarzenia:
+            print(f"  {z}")
+        print(f"""
+        =====================================
+        """)
 
-    input("\nNaciśnij jakikolwiek klawisz, aby rozpocząć nową wyprawę...")
+    input("\nNaciśnij Enter, aby rozpocząć nową wyprawę...")
+
+    #mocne 500 lini kodu, ale działa, a o to chodziło, nie? :)
+    #Oczywiście, zawsze można było to zrobić lepiej, ale jak na moje umiejętności to jestem zadowolony, a gra jest grywalna i przyjemna, więc nie narzekam :)
